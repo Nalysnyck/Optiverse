@@ -36,6 +36,7 @@ class GoldenRatioMethod(OptimizationMethodBase):
 
         self.name = 'Метод золотого перерізу'
         self.category = OneDimensionalOptimizationCategory()
+        self.iteration_result_key = "c"
     
     def _execute(self, input: dict):
         iteration = 0
@@ -82,12 +83,44 @@ class GoldenRatioMethod(OptimizationMethodBase):
             else:
                 b = d
 
+    def get_iteration_descriptions(self):
+        descriptions = []
+        iterations = self.result.get("iterations", {})
+        iter_keys = sorted(iterations.keys(), key=lambda x: int(x) if isinstance(x, str) and x.isdigit() else x)
+        for i, key in enumerate(iter_keys):
+            it = iterations[key]
+            a = it["a"]
+            b = it["b"]
+            c = it["c"]
+            d = it["d"]
+            fc = it["f(c)"]
+            fd = it["f(d)"]
+            error = it["error"]
+            if i + 1 < len(iter_keys):
+                next_it = iterations[iter_keys[i+1]]
+                next_a = next_it["a"]
+                next_b = next_it["b"]
+            else:
+                next_a = a
+                next_b = b
+            desc = (
+                f"Інтервал: [{a:.3f}; {b:.3f}]\n"
+                f"Обчислюємо точки c і d:\n"
+                f"c = {c:.3f}, d = {d:.3f}\n"
+                f"f(c) = {fc:.5f}, f(d) = {fd:.5f}\n"
+                f"Наступний інтервал: [{next_a:.3f}; {next_b:.3f}]\n"
+                f"Похибка: {error:.5f}"
+            )
+            descriptions.append(desc)
+        return descriptions
+
 class DichotomyMethod(OptimizationMethodBase):
     def __init__(self):
         super().__init__()
 
         self.name = 'Метод половинного поділу'
         self.category = OneDimensionalOptimizationCategory()
+        self.iteration_result_key = "c"
 
     def _execute(self, input: dict):
         iteration = 0
@@ -130,12 +163,46 @@ class DichotomyMethod(OptimizationMethodBase):
             else:
                 b = c
 
+    def get_iteration_descriptions(self):
+        descriptions = []
+        iterations = self.result.get("iterations", {})
+        iter_keys = sorted(iterations.keys(), key=lambda x: int(x) if isinstance(x, str) and x.isdigit() else x)
+        for i, key in enumerate(iter_keys):
+            it = iterations[key]
+            a = it["a"]
+            b = it["b"]
+            c = it["c"]
+            fa = it["f(a)"]
+            fb = it["f(b)"]
+            fc = it["f(c)"]
+            error = it["error"]
+            if i + 1 < len(iter_keys):
+                next_it = iterations[iter_keys[i+1]]
+                next_a = next_it["a"]
+                next_b = next_it["b"]
+            else:
+                next_a = a
+                next_b = b
+            desc = (
+                f"Інтервал: [{a:.1f}; {b:.1f}]\n"
+                f"Ділимо інтервал навпіл:\n"
+                f"c = ({a:.1f} + {b:.1f}) / 2 = {c:.1f}\n"
+                f"f(a) = {fa:.2f}\n"
+                f"f(b) = {fb:.2f}\n"
+                f"f(c) = {fc:.2f}\n"
+                f"Наступний інтервал: [{next_a:.1f}; {next_b:.1f}]\n"
+                f"Похибка: {error:.0f}"
+            )
+            descriptions.append(desc)
+        return descriptions
+
 class TernarySearchMethod(OptimizationMethodBase):
     def __init__(self):
         super().__init__()
 
         self.name = 'Метод тернарного пошуку'
         self.category = OneDimensionalOptimizationCategory()
+        self.iteration_result_key = "left_third"
 
     def _execute(self, input: dict):
         iteration = 0
@@ -183,12 +250,45 @@ class TernarySearchMethod(OptimizationMethodBase):
             else:
                 a = left_third
 
+    def get_iteration_descriptions(self):
+        descriptions = []
+        iterations = self.result.get("iterations", {})
+        iter_keys = sorted(iterations.keys(), key=lambda x: int(x) if isinstance(x, str) and x.isdigit() else x)
+        for i, key in enumerate(iter_keys):
+            it = iterations[key]
+            a = it["a"]
+            b = it["b"]
+            left = it["left_third"]
+            right = it["right_third"]
+            f_left = it["f(left_third)"]
+            f_right = it["f(right_third)"]
+            error = it["error"]
+            if i + 1 < len(iter_keys):
+                next_it = iterations[iter_keys[i+1]]
+                next_a = next_it["a"]
+                next_b = next_it["b"]
+            else:
+                next_a = a
+                next_b = b
+            desc = (
+                f"Інтервал: [{a:.3f}; {b:.3f}]\n"
+                f"Ділимо інтервал на третини:\n"
+                f"left = {left:.3f}, right = {right:.3f}\n"
+                f"f(left) = {f_left:.5f}\n"
+                f"f(right) = {f_right:.5f}\n"
+                f"Наступний інтервал: [{next_a:.3f}; {next_b:.3f}]\n"
+                f"Похибка: {error:.5f}"
+            )
+            descriptions.append(desc)
+        return descriptions
+
 class FibonacciMethod(OptimizationMethodBase):
     def __init__(self):
         super().__init__()
 
         self.name = 'Метод Фібоначі'
         self.category = OneDimensionalOptimizationCategory()
+        self.iteration_result_key = "c"
 
         self.__fibonacci = [1, 1]
 
@@ -240,17 +340,51 @@ class FibonacciMethod(OptimizationMethodBase):
             "position": {"x": optimum},
             "value": input["function"]([optimum])
         }
+    def get_iteration_descriptions(self):
+        descriptions = []
+        iterations = self.result.get("iterations", {})
+        iter_keys = sorted(iterations.keys(), key=lambda x: int(x) if isinstance(x, str) and x.isdigit() else x)
+        for i, key in enumerate(iter_keys):
+            it = iterations[key]
+            a = it["a"]
+            b = it["b"]
+            c = it["c"]
+            d = it["d"]
+            fa = it["f(a)"]
+            fb = it["f(b)"]
+            fc = it["f(c)"]
+            fd = it["f(d)"]
+            error = it["error"]
+            if i + 1 < len(iter_keys):
+                next_it = iterations[iter_keys[i+1]]
+                next_a = next_it["a"]
+                next_b = next_it["b"]
+            else:
+                next_a = a
+                next_b = b
+            desc = (
+                f"Інтервал: [{a:.3f}; {b:.3f}]\n"
+                f"Обчислюємо точки c і d:\n"
+                f"c = {c:.3f}, d = {d:.3f}\n"
+                f"f(a) = {fa:.5f}, f(b) = {fb:.5f}\n"
+                f"f(c) = {fc:.5f}, f(d) = {fd:.5f}\n"
+                f"Наступний інтервал: [{next_a:.3f}; {next_b:.3f}]\n"
+                f"Похибка: {error:.5f}"
+            )
+            descriptions.append(desc)
+        return descriptions
 
 class NewtonRaphsonMethod(OptimizationMethodBase):
     def __init__(self):
         super().__init__()
         self.name = 'Метод Ньютона–Рафсона'
         self.category = OneDimensionalOptimizationCategory()
+        self.iteration_result_key = "x"
         self.input_identifiers = ["start_point"]
 
     def _execute(self, input: dict):
         iteration = 0
-        x = input["start_point"]
+        x = input["start_point"][0]
         error_threshold = input["error"]
         max_iterations = input["max_iterations"]
 
@@ -298,12 +432,35 @@ class NewtonRaphsonMethod(OptimizationMethodBase):
             self.result["failure_reason"] = "Maximum iterations reached."
             self.result["is_successful"] = False
 
+    def get_iteration_descriptions(self):
+        descriptions = []
+        iterations = self.result.get("iterations", {})
+        iter_keys = sorted(iterations.keys(), key=lambda x: int(x) if isinstance(x, str) and x.isdigit() else x)
+        for i, key in enumerate(iter_keys):
+            it = iterations[key]
+            x_prev = it["x_prev"]
+            x = it["x"]
+            grad = it["f'(x)"]
+            hessian = it["f''(x)"]
+            error = it["error"]
+            desc = (
+                f"Ітерація {i+1}:\n"
+                f"x_prev = {x_prev:.5f}\n"
+                f"f'(x) = {grad:.5f}\n"
+                f"f''(x) = {hessian:.5f}\n"
+                f"x_new = x_prev - f'(x)/f''(x) = {x:.5f}\n"
+                f"Похибка: {error:.5f}"
+            )
+            descriptions.append(desc)
+        return descriptions
+
 class ExhaustiveSearchMethod(OptimizationMethodBase):
     def __init__(self):
         super().__init__()
 
         self.name = 'Метод загального перебору'
         self.category = OneDimensionalOptimizationCategory()
+        self.iteration_result_key = "x"
         self.input_identifiers = ["n_steps"]
     
     def _execute(self, input: dict):
@@ -350,6 +507,62 @@ class ExhaustiveSearchMethod(OptimizationMethodBase):
             "position": {"x": optimum},
             "value": input["function"]([optimum])
         }
+        
+    def get_iteration_descriptions(self):
+        descriptions = []
+        iterations = self.result.get("iterations", {})
+        iter_keys = sorted(iterations.keys(), key=lambda x: int(x) if isinstance(x, str) and x.isdigit() else x)
+        for i, key in enumerate(iter_keys):
+            it = iterations[key]
+            a = it["a"]
+            b = it["b"]
+            x = it["x"]
+            fx = it["f(x)"]
+            error = it["error"]
+            if i + 1 < len(iter_keys):
+                next_it = iterations[iter_keys[i+1]]
+                next_a = next_it["a"]
+                next_b = next_it["b"]
+            else:
+                next_a = a
+                next_b = b
+            desc = (
+                f"Інтервал: [{a:.3f}; {b:.3f}]\n"
+                f"Загальний перебір: x = {x:.3f}\n"
+                f"f(x) = {fx:.5f}\n"
+                f"Наступний інтервал: [{next_a:.3f}; {next_b:.3f}]\n"
+                f"Похибка: {error:.5f}"
+            )
+            descriptions.append(desc)
+        return descriptions
+
+    def get_iteration_descriptions(self):
+        descriptions = []
+        iterations = self.result.get("iterations", {})
+        iter_keys = sorted(iterations.keys(), key=lambda x: int(x) if isinstance(x, str) and x.isdigit() else x)
+        for i, key in enumerate(iter_keys):
+            it = iterations[key]
+            a = it["a"]
+            b = it["b"]
+            x = it["x"]
+            fx = it["f(x)"]
+            error = it["error"]
+            if i + 1 < len(iter_keys):
+                next_it = iterations[iter_keys[i+1]]
+                next_a = next_it["a"]
+                next_b = next_it["b"]
+            else:
+                next_a = a
+                next_b = b
+            desc = (
+                f"Інтервал: [{a:.3f}; {b:.3f}]\n"
+                f"Загальний перебір: x = {x:.3f}\n"
+                f"f(x) = {fx:.5f}\n"
+                f"Наступний інтервал: [{next_a:.3f}; {next_b:.3f}]\n"
+                f"Похибка: {error:.5f}"
+            )
+            descriptions.append(desc)
+        return descriptions
 
 class PowellsUnidimensionalMethod(OptimizationMethodBase):
     def __init__(self):
@@ -357,6 +570,7 @@ class PowellsUnidimensionalMethod(OptimizationMethodBase):
 
         self.name = 'Метод Пауелла'
         self.category = OneDimensionalOptimizationCategory()
+        self.iteration_result_key = "x1"
 
     def _execute(self, input: dict):
         iteration = 0
@@ -404,12 +618,45 @@ class PowellsUnidimensionalMethod(OptimizationMethodBase):
         if iteration >= max_iterations:
             self.result["is_successful"] = False
             self.result["failure_reason"] = "Maximum iterations reached without convergence"
+            
+    def get_iteration_descriptions(self):
+        descriptions = []
+        iterations = self.result.get("iterations", {})
+        iter_keys = sorted(iterations.keys(), key=lambda x: int(x) if isinstance(x, str) and x.isdigit() else x)
+        for i, key in enumerate(iter_keys):
+            it = iterations[key]
+            a = it["a"]
+            b = it["b"]
+            x1 = it["x1"]
+            x2 = it["x2"]
+            f1 = it["f(x1)"]
+            f2 = it["f(x2)"]
+            error = it["error"]
+            if i + 1 < len(iter_keys):
+                next_it = iterations[iter_keys[i+1]]
+                next_a = next_it["a"]
+                next_b = next_it["b"]
+            else:
+                next_a = a
+                next_b = b
+            desc = (
+                f"Інтервал: [{a:.3f}; {b:.3f}]\n"
+                f"Обчислюємо точки x1 і x2:\n"
+                f"x1 = {x1:.3f}, x2 = {x2:.3f}\n"
+                f"f(x1) = {f1:.5f}\n"
+                f"f(x2) = {f2:.5f}\n"
+                f"Наступний інтервал: [{next_a:.3f}; {next_b:.3f}]\n"
+                f"Похибка: {error:.5f}"
+            )
+            descriptions.append(desc)
+        return descriptions
 
 class CubicSearchMethod(OptimizationMethodBase):
     def __init__(self):
         super().__init__()
         self.name = 'Метод кубічної апроксимації'
         self.category = OneDimensionalOptimizationCategory()
+        self.iteration_result_key = "x_opt"
 
     def _execute(self, input: dict):
         iteration = 0
@@ -477,11 +724,44 @@ class CubicSearchMethod(OptimizationMethodBase):
         self.result['failure_reason'] = 'Maximum iterations reached.'
         self.result['is_successful'] = False
 
+    def get_iteration_descriptions(self):
+        descriptions = []
+        iterations = self.result.get("iterations", {})
+        iter_keys = sorted(iterations.keys(), key=lambda x: int(x) if isinstance(x, str) and x.isdigit() else x)
+        for i, key in enumerate(iter_keys):
+            it = iterations[key]
+            a = it["a"]
+            b = it["b"]
+            x_opt = it["x_opt"]
+            fa = it["f(a)"]
+            fb = it["f(b)"]
+            f_opt = it["f(x_opt)"]
+            error = it["error"]
+            if i + 1 < len(iter_keys):
+                next_it = iterations[iter_keys[i+1]]
+                next_a = next_it["a"]
+                next_b = next_it["b"]
+            else:
+                next_a = a
+                next_b = b
+            desc = (
+                f"Інтервал: [{a:.3f}; {b:.3f}]\n"
+                f"Обчислюємо оптимальну точку:\n"
+                f"x_opt = {x_opt:.3f}\n"
+                f"f(a) = {fa:.5f}, f(b) = {fb:.5f}\n"
+                f"f(x_opt) = {f_opt:.5f}\n"
+                f"Наступний інтервал: [{next_a:.3f}; {next_b:.3f}]\n"
+                f"Похибка: {error:.5f}"
+            )
+            descriptions.append(desc)
+        return descriptions
+
 class SecantMethod(OptimizationMethodBase):
     def __init__(self):
         super().__init__()
         self.name = 'Метод хорд'
         self.category = OneDimensionalOptimizationCategory()
+        self.iteration_result_key = "x_new"
 
     def _execute(self, input: dict):
         iteration = 0
@@ -541,11 +821,41 @@ class SecantMethod(OptimizationMethodBase):
             self.result["is_successful"] = False
             self.result["failure_reason"] = "Maximum iterations reached."
 
+    def get_iteration_descriptions(self):
+        descriptions = []
+        iterations = self.result.get("iterations", {})
+        iter_keys = sorted(iterations.keys(), key=lambda x: int(x) if isinstance(x, str) and x.isdigit() else x)
+        for i, key in enumerate(iter_keys):
+            it = iterations[key]
+            x0 = it["x0"]
+            x1 = it["x1"]
+            x_new = it["x_new"]
+            f1_x0 = it["f'(x0)"]
+            f1_x1 = it["f'(x1)"]
+            f1_x_new = it["f'(x_new)"]
+            f2_x_new = it["f''(x_new)"]
+            f_x_new = it["f(x_new)"]
+            error = it["error"]
+            desc = (
+                f"Поточні точки: x0 = {x0:.3f}, x1 = {x1:.3f}\n"
+                f"Нова точка: x_new = {x_new:.3f}\n"
+                f"Похідні в точках:\n"
+                f"f'(x0) = {f1_x0:.5f}\n"
+                f"f'(x1) = {f1_x1:.5f}\n"
+                f"f'(x_new) = {f1_x_new:.5f}\n"
+                f"f''(x_new) = {f2_x_new:.5f}\n"
+                f"f(x_new) = {f_x_new:.5f}\n"
+                f"Похибка: {error:.5f}"
+            )
+            descriptions.append(desc)
+        return descriptions
+
 class BrentsMethod(OptimizationMethodBase):
     def __init__(self):
         super().__init__()
         self.name = 'Метод Брента'
         self.category = OneDimensionalOptimizationCategory()
+        self.iteration_result_key = "s"
 
     def _execute(self, input: dict):
         a, b = input['interval']
@@ -622,11 +932,45 @@ class BrentsMethod(OptimizationMethodBase):
             self.result['failure_reason'] = 'Maximum iterations reached.'
             self.result['is_successful'] = False
 
+    def get_iteration_descriptions(self):
+        descriptions = []
+        iterations = self.result.get("iterations", {})
+        iter_keys = sorted(iterations.keys(), key=lambda x: int(x) if isinstance(x, str) and x.isdigit() else x)
+        for i, key in enumerate(iter_keys):
+            it = iterations[key]
+            a = it["a"]
+            b = it["b"]
+            s = it["s"]
+            fa = it["f(a)"]
+            fb = it["f(b)"]
+            fs = it["f(s)"]
+            error = it["error"]
+            if i + 1 < len(iter_keys):
+                next_it = iterations[iter_keys[i+1]]
+                next_a = next_it["a"]
+                next_b = next_it["b"]
+            else:
+                next_a = a
+                next_b = b
+            desc = (
+                f"Інтервал: [{a:.3f}; {b:.3f}]\n"
+                f"Обчислюємо точку s:\n"
+                f"s = {s:.3f}\n"
+                f"f(a) = {fa:.5f}\n"
+                f"f(b) = {fb:.5f}\n"
+                f"f(s) = {fs:.5f}\n"
+                f"Наступний інтервал: [{next_a:.3f}; {next_b:.3f}]\n"
+                f"Похибка: {error:.5f}"
+            )
+            descriptions.append(desc)
+        return descriptions
+
 class SuccessiveParabolicInterpolationMethod(OptimizationMethodBase):
     def __init__(self):
         super().__init__()
         self.name = 'Метод збіжності дотичних'
         self.category = OneDimensionalOptimizationCategory()
+        self.iteration_result_key = "x_new"
 
     def _execute(self, input: dict):
         iteration = 0
@@ -682,12 +1026,50 @@ class SuccessiveParabolicInterpolationMethod(OptimizationMethodBase):
             # Update points for next iteration
             a, b, c = b, c, x_new
             fa, fb, fc = fb, fc, fx_new
+        
+    def get_iteration_descriptions(self):
+        descriptions = []
+        iterations = self.result.get("iterations", {})
+        iter_keys = sorted(iterations.keys(), key=lambda x: int(x) if isinstance(x, str) and x.isdigit() else x)
+        for i, key in enumerate(iter_keys):
+            it = iterations[key]
+            a = it["a"]
+            b = it["b"]
+            c = it["c"]
+            x_new = it["x_new"]
+            fa = it["f(a)"]
+            fb = it["f(b)"]
+            fc = it["f(c)"]
+            fx_new = it["f(x_new)"]
+            error = it["error"]
+            if i + 1 < len(iter_keys):
+                next_it = iterations[iter_keys[i+1]]
+                next_a = next_it["a"]
+                next_b = next_it["b"]
+            else:
+                next_a = a
+                next_b = b
+            desc = (
+                f"Інтервал: [{a:.3f}; {b:.3f}]\n"
+                f"Точка c = {c:.3f}\n"
+                f"Нова точка: x_new = {x_new:.3f}\n"
+                f"Значення функції:\n"
+                f"f(a) = {fa:.5f}\n"
+                f"f(b) = {fb:.5f}\n"
+                f"f(c) = {fc:.5f}\n"
+                f"f(x_new) = {fx_new:.5f}\n"
+                f"Наступний інтервал: [{next_a:.3f}; {next_b:.3f}]\n"
+                f"Похибка: {error:.5f}"
+            )
+            descriptions.append(desc)
+        return descriptions
 
 class RidderMethod(OptimizationMethodBase):
     def __init__(self):
         super().__init__()
         self.name = 'Метод Ріддера'
         self.category = OneDimensionalOptimizationCategory()
+        self.iteration_result_key = "x_new"
 
     def _execute(self, input: dict):
         iteration = 0
@@ -760,11 +1142,41 @@ class RidderMethod(OptimizationMethodBase):
             self.result["is_successful"] = False
             self.result["failure_reason"] = "Maximum iterations reached."
 
+    def get_iteration_descriptions(self):
+        descriptions = []
+        iterations = self.result.get("iterations", {})
+        iter_keys = sorted(iterations.keys(), key=lambda x: int(x) if isinstance(x, str) and x.isdigit() else x)
+        for i, key in enumerate(iter_keys):
+            it = iterations[key]
+            a = it["a"]
+            b = it["b"]
+            c = it["c"]
+            x_new = it["x_new"]
+            fa = it["f(a)"]
+            fb = it["f(b)"]
+            fc = it["f(c)"]
+            fx_new = it["f(x_new)"]
+            error = it["error"]
+            desc = (
+                f"Інтервал: [{a:.3f}; {b:.3f}]\n"
+                f"Точка c: {c:.3f}\n"
+                f"Нова точка: x_new = {x_new:.3f}\n"
+                f"Значення функції:\n"
+                f"f(a) = {fa:.5f}\n"
+                f"f(b) = {fb:.5f}\n"
+                f"f(c) = {fc:.5f}\n"
+                f"f(x_new) = {fx_new:.5f}\n"
+                f"Похибка: {error:.5f}"
+            )
+            descriptions.append(desc)
+        return descriptions
+
 class NelderMeadMethod(OptimizationMethodBase):
     def __init__(self):
         super().__init__()
         self.name = 'Метод Нелдера-Міда'
         self.category = OneDimensionalOptimizationCategory()
+        self.iteration_result_key = "center"
         self.input_identifiers = ["alpha", "gamma", "rho", "sigma"]
 
     def _generate_starting_points(self, interval, n=3):
@@ -815,6 +1227,7 @@ class NelderMeadMethod(OptimizationMethodBase):
 
             self.result["iterations"][iteration] = {
                 "points": [float(p) for p in points],
+                "center": float(sum(points) / len(points)),
                 "f_values": [float(input["function"]([p])) for p in points],
                 "error": float(numpy.std([input["function"]([p]) for p in points]))
             }
@@ -833,6 +1246,29 @@ class NelderMeadMethod(OptimizationMethodBase):
 
         if iteration >= max_iter:
             self.result["failure_reason"] = "Maximum iterations reached."
+
+    def get_iteration_descriptions(self):
+        descriptions = []
+        iterations = self.result.get("iterations", {})
+        iter_keys = sorted(iterations.keys(), key=lambda x: int(x) if isinstance(x, str) and x.isdigit() else x)
+        
+        for i, key in enumerate(iter_keys):
+            it = iterations[key]
+            points = it["points"]
+            f_values = it["f_values"]
+            error = it["error"]
+            
+            desc = (
+                f"Точки симплексу:\n"
+            )
+            
+            for j, (point, f_val) in enumerate(zip(points, f_values)):
+                desc += f"x{j+1} = {point:.3f}, f(x{j+1}) = {f_val:.5f}\n"
+            
+            desc += f"Похибка: {error:.5f}"
+            descriptions.append(desc)
+            
+        return descriptions
 
 ONEDIMENSIONAL_METHODS_LIST = [
     GoldenRatioMethod, 
@@ -1171,7 +1607,7 @@ class CauchyGradientDescentMethod(OptimizationMethodBase):
             # Побудова скалярного добутку нової ∇f(x_{k+1}) та старої ∇f(x_k)
             dot_product_expr = sum(sympy.Float(grad_k[i]) * gradient_exprs[i] for i in range(len(x)))
 
-            # Розв’язання рівняння: ∇f(x_{k+1}) ⋅ ∇f(x_k) = 0
+            # Розв'язання рівняння: ∇f(x_{k+1}) ⋅ ∇f(x_k) = 0
             gamma_solutions = sympy.solve(dot_product_expr, gamma)
 
             if not gamma_solutions:
@@ -2178,3 +2614,34 @@ MULTIDIMENSIONAL_METHODS_LIST = [
     DifferentialEvolutionMethod,
     SimulatedAnnealingMethod
 ]
+
+def get_iteration_descriptions(self):
+    descriptions = []
+    iterations = self.result.get("iterations", {})
+    iter_keys = sorted(iterations.keys(), key=lambda x: int(x) if isinstance(x, str) and x.isdigit() else x)
+    for i, key in enumerate(iter_keys):
+        it = iterations[key]
+        a = it["a"]
+        b = it["b"]
+        c = it["c"]
+        d = it["d"]
+        fc = it["f(c)"]
+        fd = it["f(d)"]
+        error = it["error"]
+        if i + 1 < len(iter_keys):
+            next_it = iterations[iter_keys[i+1]]
+            next_a = next_it["a"]
+            next_b = next_it["b"]
+        else:
+            next_a = a
+            next_b = b
+        desc = (
+            f"Інтервал: [{a:.3f}; {b:.3f}]\n"
+            f"Обчислюємо точки c і d:\n"
+            f"c = {c:.3f}, d = {d:.3f}\n"
+            f"f(c) = {fc:.5f}, f(d) = {fd:.5f}\n"
+            f"Наступний інтервал: [{next_a:.3f}; {next_b:.3f}]\n"
+            f"Похибка: {error:.5f}"
+        )
+        descriptions.append(desc)
+    return descriptions

@@ -15,21 +15,23 @@ class FunctionInput(QtWidgets.QWidget):
         self.dimensionality = dimensionality
 
     def get_data(self):
-        if not self.is_valid():
-            return None
         return self.line_edit.text()
 
     def is_valid(self):
-        if not self.line_edit.text().strip() or 'x' not in self.line_edit.text():
-            self.set_invalid()
+        if not self.line_edit.text().strip():
             return False
 
         try:
             # Визначаємо дозволені змінні залежно від типу оптимізації
             if self.optimization_type == "1D":
                 allowed_symbols = {sympy.Symbol("x")}
+                if 'x' not in self.line_edit.text():
+                    return False
             else:
                 allowed_symbols = {sympy.Symbol(f"x{i + 1}") for i in range(self.dimensionality)}
+                # Check if at least one of the allowed variables is present
+                if not any(f"x{i+1}" in self.line_edit.text() for i in range(self.dimensionality)):
+                    return False
 
             # Парсимо вираз без обчислення
             expr = sympy.sympify(self.line_edit.text(), evaluate=False)
@@ -47,7 +49,6 @@ class FunctionInput(QtWidgets.QWidget):
             return True
 
         except Exception:
-            self.set_invalid()
             return False
 
     def set_invalid(self):
@@ -70,8 +71,6 @@ class FloatInput(QtWidgets.QWidget):
         self.setLayout(self.layout)
 
     def get_data(self):
-        if not self.is_valid():
-            return None
         return float(self.line_edit.text())
     
     def is_valid(self):
@@ -79,7 +78,6 @@ class FloatInput(QtWidgets.QWidget):
             float(self.line_edit.text())
             return True
         except Exception:
-            self.set_invalid()
             return False
 
     def set_invalid(self):
@@ -102,21 +100,16 @@ class DimensionalityInput(QtWidgets.QWidget):
         self.setLayout(self.layout)
 
     def get_data(self):
-        if not self.is_valid():
-            return None
         return float(self.line_edit.text())
 
     def is_valid(self):
         try:
             value = int(self.line_edit.text())
             if value > 0:
-                self.set_valid()
                 return True
             else:
-                self.set_invalid()
                 return False
         except ValueError:
-            self.set_invalid()
             return False
 
     def set_invalid(self):
@@ -140,7 +133,7 @@ class CheckboxInput(QtWidgets.QWidget):
         self.setLayout(self.layout)
 
     def is_valid(self):
-        return True  # завжди валідний
+        return True
 
     def get_data(self):
         return self.checkbox.isChecked()
@@ -206,26 +199,21 @@ class IntervalInput(QtWidgets.QWidget):
             self.intervals[var_name] = (from_input, to_input)
 
     def is_valid(self):
-        valid = True
         for var, (from_input, to_input) in self.intervals.items():
             try:
                 a = float(from_input.text())
                 b = float(to_input.text())
                 if a > b:
                     raise ValueError
-                self.set_valid(var)
             except Exception:
-                self.set_invalid(var)
-                valid = False
-        return valid
+                return False
+        return True
 
     def get_data(self):
         """
         Повертає словник з інтервалами: {"x1": (від, до), "x2": (від, до), ...}
         Значення повертаються як рядки.
         """
-        if not self.is_valid():
-            return None
         return {
             var: (float(inputs[0].text()), float(inputs[1].text()))
             for var, inputs in self.intervals.items()
@@ -240,7 +228,7 @@ class IntervalInput(QtWidgets.QWidget):
                 self.intervals[var][0].setText(str(from_val))
                 self.intervals[var][1].setText(str(to_val))
 
-    def set_invalid(self, var: str):
+    def set_invalid(self, var: str = 0):
         """
         Підсвічує інтервал для певного виміру червоним.
         """
@@ -248,7 +236,7 @@ class IntervalInput(QtWidgets.QWidget):
             self.intervals[var][0].setStyleSheet("border: 2px solid red;")
             self.intervals[var][1].setStyleSheet("border: 2px solid red;")
 
-    def set_valid(self, var: str):
+    def set_valid(self, var: str = 0):
         """
         Скидає підсвічування для певного виміру.
         """
@@ -270,8 +258,6 @@ class VectorInput(QtWidgets.QWidget):
         elif len(default_value) < dimensionality:
             default_value += [""] * (dimensionality - len(default_value))
 
-        self.inputs_layout.addWidget(QtWidgets.QLabel("("))
-
         for i in range(dimensionality):
             line_edit = QtWidgets.QLineEdit(default_value[i])
             line_edit.setFixedWidth(50)
@@ -279,27 +265,20 @@ class VectorInput(QtWidgets.QWidget):
             self.inputs_layout.addWidget(line_edit)
             if i < dimensionality - 1:
                 self.inputs_layout.addWidget(QtWidgets.QLabel(";"))
-                
-        self.inputs_layout.addWidget(QtWidgets.QLabel(")"))
 
-        self.layout.addWidget(self.label)
-        self.layout.addLayout(self.inputs_layout)
+        self.layout.addWidget(self.label, 1)
+        self.layout.addLayout(self.inputs_layout, 1)
         self.setLayout(self.layout)
 
     def is_valid(self):
-        valid = True
         for line in self.inputs:
             try:
                 float(line.text())
-                line.setStyleSheet("")
             except ValueError:
-                line.setStyleSheet("border: 2px solid red;")
-                valid = False
-        return valid
+                return False
+        return True
 
     def get_data(self):
-        if not self.is_valid():
-            return None
         return [float(line.text()) for line in self.inputs]
 
     def set_values(self, values):
@@ -312,11 +291,14 @@ class VectorInput(QtWidgets.QWidget):
 
     def set_invalid(self):
         for line in self.inputs:
-            line.setStyleSheet("border: 2px solid red;")
+            try:
+                float(line.text())
+                line.setStyleSheet("")
+            except ValueError:
+                line.setStyleSheet("border: 2px solid red;")
 
     def set_valid(self):
-        for line in self.inputs:
-            line.setStyleSheet("")
+        self.set_invalid()
 
 class LabeledGroup(QtWidgets.QGroupBox):
     def __init__(self, title: str = "Група даних", parent=None):
